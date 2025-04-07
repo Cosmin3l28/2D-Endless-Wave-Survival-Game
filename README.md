@@ -9,10 +9,8 @@
 ### Members <a id="Members"></a>:
 - Niculae Cosmin
 - Ionescu Peter
-- Bantas Calin
+- Bantas Calin Andrei
 
 ### Backlog <a id="Backlog"></a>:
 
 [https://github.com/users/Cosmin3l28/projects/1](https://github.com/users/Cosmin3l28/projects/1)
-
-cioaca
