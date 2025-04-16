@@ -11,7 +11,7 @@ class Entity:
         self.action = '' # default action
         self.set_action('idle/idle') # set the default action to idle
         self.flip = False # default flip
-        self.speed = 40 # default speed
+        self.speed = 80 # default speed
         
     
     def rectangle(self, offset=(0,0)):
@@ -98,7 +98,7 @@ class Player(Entity):
             self.stamina.stamina_deplete()
             self.stamina.render()
 
-            self.speed = 85 # increase the speed of the player
+            self.speed = 110 # increase the speed of the player
             if movement[0]:
                 self.set_action('run/run_up')
                 self.update_idle_up()
