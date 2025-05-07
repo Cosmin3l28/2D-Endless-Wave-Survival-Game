@@ -20,13 +20,12 @@ class Level:
     
     def create_map(self):
         layout = {
-            'boundary': import_csv_layout('C:/Users/cosmi/Desktop/new_game/graphics/map_restrictions.csv'), 
-            #'walls': import_csv_layout('C:/Users/cosmi/Desktop/new_game/graphics/modified_map_layer2.csv'),
-            'object': import_csv_layout('C:/Users/cosmi/Desktop/new_game/graphics/map_objects.csv'),
+            'boundary': import_csv_layout('graphics/map_restrictions.csv'), 
+            'object': import_csv_layout('graphics/map_objects.csv'),
         }
 
         graphics = {
-            'objects': import_folder('C:/Users/cosmi/Desktop/new_game/graphics/Objects'),
+            'objects': import_folder('graphics/Objects'),
         }
         for style, layout in layout.items():
             for row_index, row in enumerate(layout):
