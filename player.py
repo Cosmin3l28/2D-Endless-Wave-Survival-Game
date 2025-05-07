@@ -1,5 +1,4 @@
 import pygame
-from settings import *
 from support import import_folder
 
 class Player(pygame.sprite.Sprite):
@@ -8,7 +7,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load('graphics/player/left_idle/sprite_invers_0.png').convert_alpha()#we load the image of the tile
         self.image = pygame.transform.scale(self.image, (96, 96)) # we want to scale the image to the size of the tile
         self.rect = self.image.get_rect(topleft=pos)
-        self.hitbox = self.rect.inflate(0, -20) # we want to make the hitbox smaller than the tile so that we can see the tile and not the hitbox
+        self.hitbox = self.rect.inflate(-60, -24) # we want to make the hitbox smaller than the tile so that we can see the tile and not the hitbox
         
         self.import_player_assets()
         self.status = 'down' # we want to set the status of the player to idle down
@@ -17,15 +16,13 @@ class Player(pygame.sprite.Sprite):
         self.melee = False # we want to set the attacking status to false
         self.melee_time = None
         self.melee_cooldown = 3000
-        self.melee_speed = 0.15
+        self.melee_speed = 0.1
         self.animation_melee = False
         self.frame_melee_index = 0
 
         self.direction = pygame.math.Vector2() # x and y for movement
-        self.speed = 3
+        self.speed = 4
         self.stamina = 100
-        self.health = 100
-        self.dash = 0
         
         self.obstacle_sprites = obstacle_sprites # we need this to check for collisions with the obstacles
  
@@ -81,24 +78,18 @@ class Player(pygame.sprite.Sprite):
         #     self.dash = 0
             
         self.stamina = max(0, min(self.stamina, 100))
-        
 
         #attack
         if mouse[0] and self.melee == False:
             print('attack')
             self.melee = True
-            self.speed = 2
             self.melee_time = pygame.time.get_ticks() # we get the current time in milliseconds
             self.animation_melee = True
             self.animation_speed = self.melee_speed
+            self.frame_melee_index = 0
+            self.frame_index = 0 # we want to reset the frame index so that we can see the attack animation
     
     def move(self, speed):
-        
-        
-        # while self.dash > 0:
-        #     self.dash -= 1
-        #     speed = 30  # Temporarily increase the player's speed during the dash
-        
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize() # normalizes the vector to have a length of 1
             #this way we can move in diagonal without increasing the speed
@@ -107,8 +98,6 @@ class Player(pygame.sprite.Sprite):
         self.hitbox.y += self.direction.y * speed
         self.collision('vertical')
         self.rect.center = self.hitbox.center # we want to move the rect with the hitbox so that we can see the player moving
-        
-
         
     def collision(self, direction):
         if direction == 'horizontal':
@@ -126,14 +115,14 @@ class Player(pygame.sprite.Sprite):
                         self.hitbox.bottom = sprite.hitbox.top  # down collision
                     if self.direction.y < 0:
                         self.hitbox.top = sprite.hitbox.bottom  # up collision
-    
+
     def draw_stamina_bar(self, surface):
         # Calculăm lungimea barei în funcție de stamina curentă
         current_width = (self.stamina / 100) * 300
 
         # Culori
         background_color = 'black'
-        stamina_color = 'cyan'
+        stamina_color = 'white'
 
         # Desenăm fundalul barei
         pygame.draw.rect(surface, background_color, (10, 20, 300, 35), border_radius = 20)
@@ -164,6 +153,8 @@ class Player(pygame.sprite.Sprite):
                     self.status = self.status + '_idle'
 
         if self.animation_melee == True:
+            self.direction.x = 0
+            self.direction.y = 0
             if not 'attack' in self.status:
                 if 'idle' in self.status:
                      self.status = self.status.replace('_idle', '_attack')
@@ -174,7 +165,7 @@ class Player(pygame.sprite.Sprite):
         current_time = pygame.time.get_ticks()
         if self.melee == True:
             self.frame_melee_index += self.animation_speed
-            if self.frame_melee_index >= len(self.animations[self.status]):
+            if self.frame_melee_index >= 4:
                 self.animation_melee = False
                 self.animation_speed = 0.1
             if current_time - self.melee_time >= self.melee_cooldown:
@@ -184,7 +175,7 @@ class Player(pygame.sprite.Sprite):
         animation = self.animations[self.status]
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
-                self.frame_index = 0
+            self.frame_index = 0
         self.image = animation[int(self.frame_index)] # we get the image from the list of images
         self.image = pygame.transform.scale(self.image, (96, 96))
         self.rect = self.image.get_rect(center=self.hitbox.center) # we want to move the rect with the hitbox so that we can see the player moving

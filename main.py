@@ -1,13 +1,12 @@
 import pygame, sys
-from settings import *
 from level import Level
-
+from support import WIDTH, HEIGTH, FPS
 class Game:
     def __init__(self):
         # general setup
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGTH))
-        pygame.display.set_caption('Zombie Survival')
+        pygame.display.set_caption('Survival Game')
         self.clock = pygame.time.Clock()
         
         # level setup
