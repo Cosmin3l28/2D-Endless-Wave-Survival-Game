@@ -22,8 +22,10 @@ class Player(pygame.sprite.Sprite):
         self.frame_melee_index = 0
 
         self.direction = pygame.math.Vector2() # x and y for movement
-        self.speed = 4
+        self.speed = 3
         self.stamina = 100
+        self.health = 100
+        self.dash = 0
         
         self.obstacle_sprites = obstacle_sprites # we need this to check for collisions with the obstacles
  
@@ -60,9 +62,26 @@ class Player(pygame.sprite.Sprite):
             self.direction.x = 0
         
         if keys[pygame.K_LSHIFT]: #sprint
-            self.speed = 6
+            if self.stamina > 0:
+                self.speed = 7
+                self.stamina -= 0.5 # we want to decrease the stamina when we sprint
+            else:
+                self.speed = 3
         else:
-            self.speed = 4
+            self.speed = 3
+            if 'idle' in self.status:
+                self.stamina += 0.8
+            else:
+                self.stamina += 0.4
+                
+        # if keys[pygame.K_SPACE] and self.cooldown == 0: #dash
+        #     self.dash = 100
+        #     self.cooldown = 2000 # we want to set a cooldown for the dash
+        # else:
+        #     self.dash = 0
+            
+        self.stamina = max(0, min(self.stamina, 100))
+        
 
         #attack
         if mouse[0] and self.melee == False:
@@ -74,6 +93,12 @@ class Player(pygame.sprite.Sprite):
             self.animation_speed = self.melee_speed
     
     def move(self, speed):
+        
+        
+        # while self.dash > 0:
+        #     self.dash -= 1
+        #     speed = 30  # Temporarily increase the player's speed during the dash
+        
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize() # normalizes the vector to have a length of 1
             #this way we can move in diagonal without increasing the speed
@@ -82,6 +107,8 @@ class Player(pygame.sprite.Sprite):
         self.hitbox.y += self.direction.y * speed
         self.collision('vertical')
         self.rect.center = self.hitbox.center # we want to move the rect with the hitbox so that we can see the player moving
+        
+
         
     def collision(self, direction):
         if direction == 'horizontal':
@@ -99,6 +126,21 @@ class Player(pygame.sprite.Sprite):
                         self.hitbox.bottom = sprite.hitbox.top  # down collision
                     if self.direction.y < 0:
                         self.hitbox.top = sprite.hitbox.bottom  # up collision
+    
+    def draw_stamina_bar(self, surface):
+        # Calculăm lungimea barei în funcție de stamina curentă
+        current_width = (self.stamina / 100) * 300
+
+        # Culori
+        background_color = 'black'
+        stamina_color = 'cyan'
+
+        # Desenăm fundalul barei
+        pygame.draw.rect(surface, background_color, (10, 20, 300, 35), border_radius = 20)
+
+        # Desenăm bara de stamina
+        pygame.draw.rect(surface, stamina_color, (10, 20, current_width, 35), border_radius = 20)
+        #### 2. Actualizează stamina în funcție de acțiunile jucătorului
 
     def update(self):
         self.input()

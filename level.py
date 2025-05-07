@@ -49,6 +49,7 @@ class Level:
     def run(self): # here we display what happens on screen using our coustom camera that follows the player
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
+        self.player.draw_stamina_bar(self.display_surface)
         # debug(self.player.direction)
         debug(self.player.speed)
         
