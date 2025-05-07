@@ -68,13 +68,12 @@ class YsortCameraGroup(pygame.sprite.Group): # to create a custom camera that fo
 
 
     def custom_draw(self, player):
-        # get the player position and set the offset
-        # self.offset.x = player.rect.centerx - self.half_width
-        # self.offset.y = player.rect.centery - self.half_height
         # Smooth camera lag effect
         self.offset.x += (player.rect.centerx - self.half_width - self.offset.x) / 20 
         self.offset.y += (player.rect.centery - self.half_height - self.offset.y) / 20 
 
+        self.offset.x = max(0, min(self.offset.x, self.floor_rect.width - self.display_surface.get_width())) # we want to limit the offset to the width of the floor
+        self.offset.y = max(0, min(self.offset.y, self.floor_rect.height - self.display_surface.get_height())) # we want to limit the offset to the height of the floor
 
         offset_pos = self.floor_rect.topleft - self.offset
         # draw the floor
