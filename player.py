@@ -15,7 +15,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 0.1
         self.melee = False # we want to set the attacking status to false
         self.melee_time = None
-        self.melee_cooldown = 3000
+        self.melee_cooldown = 1000
         self.melee_speed = 0.1
         self.animation_melee = False
         self.frame_melee_index = 0
@@ -23,6 +23,14 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2() # x and y for movement
         self.speed = 4
         self.stamina = 100
+        self.health = 100
+        
+        self.is_dashing = False
+        self.dash_start_time = 0
+        self.dash_duration = 200  # Dash lasts 0.8 seconds (in milliseconds)
+        self.dash_animation_speed = 0.3  # Faster animation speed during dash
+        self.dash_c = False
+        self.dash_cooldown = 4000
         
         self.obstacle_sprites = obstacle_sprites # we need this to check for collisions with the obstacles
  
@@ -71,12 +79,13 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.stamina += 0.4
                 
-        # if keys[pygame.K_SPACE] and self.cooldown == 0: #dash
-        #     self.dash = 100
-        #     self.cooldown = 2000 # we want to set a cooldown for the dash
-        # else:
-        #     self.dash = 0
+        if keys[pygame.K_SPACE] and not self.is_dashing and self.stamina >= 35 and self.dash_c == False:
+            self.is_dashing = True
+            self.dash_start_time = pygame.time.get_ticks()
+            self.stamina -= 35  # Reduce stamina when dashing
+            self.dash_c = True
             
+        
         self.stamina = max(0, min(self.stamina, 100))
 
         #attack
@@ -98,6 +107,25 @@ class Player(pygame.sprite.Sprite):
         self.hitbox.y += self.direction.y * speed
         self.collision('vertical')
         self.rect.center = self.hitbox.center # we want to move the rect with the hitbox so that we can see the player moving
+        
+    def dash(self):
+        if self.is_dashing:
+            current_time = pygame.time.get_ticks()
+            
+            if current_time - self.dash_start_time <= self.dash_duration:
+                self.speed = 16  # Increase speed during dash
+                self.animation_speed = self.dash_animation_speed  # Speed up animation
+            else:
+                self.is_dashing = False
+                self.speed = 4  # Reset to normal speed
+                self.animation_speed = 0.1  # Reset animation speed to the normal one
+                
+    def cooldown_dash(self):
+        current_time = pygame.time.get_ticks()
+        if self.dash_c == True:
+            if current_time - self.dash_start_time >= self.dash_cooldown:
+                self.dash_c = False
+            
         
     def collision(self, direction):
         if direction == 'horizontal':
@@ -122,19 +150,36 @@ class Player(pygame.sprite.Sprite):
 
         # Culori
         background_color = 'black'
-        stamina_color = 'white'
+        color = 'white'
+
+        # Desenăm fundalul barei
+        pygame.draw.rect(surface, background_color, (10, 80, 300, 35), border_radius = 20)
+
+        # Desenăm bara de stamina
+        pygame.draw.rect(surface, color, (10, 80, current_width, 35), border_radius = 20)
+        #### 2. Actualizează stamina în funcție de acțiunile jucătorului
+        
+    def draw_health_bar(self, surface):
+        # Calculăm lungimea barei în funcție de stamina curentă
+        current_width = (self.health / 100) * 300
+
+        # Culori
+        background_color = 'red'
+        color = 'green'
 
         # Desenăm fundalul barei
         pygame.draw.rect(surface, background_color, (10, 20, 300, 35), border_radius = 20)
 
         # Desenăm bara de stamina
-        pygame.draw.rect(surface, stamina_color, (10, 20, current_width, 35), border_radius = 20)
+        pygame.draw.rect(surface, color, (10, 20, current_width, 35), border_radius = 20)
         #### 2. Actualizează stamina în funcție de acțiunile jucătorului
 
     def update(self):
         self.input()
-        self.cooldown()
+        self.cooldown_melee()
+        self.cooldown_dash()
         self.get_status()
+        self.dash()
         self.animate()
         self.move(self.speed)
         
@@ -161,7 +206,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     self.status = self.status + '_attack'
 
-    def cooldown(self):
+    def cooldown_melee(self):
         current_time = pygame.time.get_ticks()
         if self.melee == True:
             self.frame_melee_index += self.animation_speed
@@ -170,6 +215,8 @@ class Player(pygame.sprite.Sprite):
                 self.animation_speed = 0.1
             if current_time - self.melee_time >= self.melee_cooldown:
                 self.melee = False
+    
+
 
     def animate(self):
         animation = self.animations[self.status]
