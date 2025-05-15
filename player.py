@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_melee_index = 0
 
         self.direction = pygame.math.Vector2() # x and y for movement
-        self.speed = 4
+        self.speed = 2
         self.stamina = 100
         self.health = 100
         
@@ -48,32 +48,38 @@ class Player(pygame.sprite.Sprite):
     def input(self):
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
-        if keys[pygame.K_w]:
+        # Reset direction vector before setting it
+        self.direction.x = 0
+        self.direction.y = 0
+
+        if keys[pygame.K_w] and not keys[pygame.K_s]:
             self.direction.y = -1
             self.status = 'up'
-        elif keys[pygame.K_s]:
+        elif keys[pygame.K_s] and not keys[pygame.K_w]:
             self.direction.y = 1
             self.status = 'down'
         else:
             self.direction.y = 0
-        
-        if keys[pygame.K_a]:
+
+
+        if keys[pygame.K_a] and not keys[pygame.K_d]:
             self.direction.x = -1
             self.status = 'left'
-        elif keys[pygame.K_d]:
+        elif keys[pygame.K_d] and not keys[pygame.K_a]:
             self.direction.x = 1
             self.status = 'right'
         else:
             self.direction.x = 0
+            
         
         if keys[pygame.K_LSHIFT]: #sprint
             if self.stamina > 0:
-                self.speed = 7
-                self.stamina -= 0.5 # we want to decrease the stamina when we sprint
+                self.speed = 4
+                self.stamina -= 0.4 # we want to decrease the stamina when we sprint
             else:
-                self.speed = 3
+                self.speed = 2
         else:
-            self.speed = 3
+            self.speed = 2
             if 'idle' in self.status:
                 self.stamina += 0.8
             else:
@@ -99,9 +105,13 @@ class Player(pygame.sprite.Sprite):
             self.frame_index = 0 # we want to reset the frame index so that we can see the attack animation
     
     def move(self, speed):
-        if self.direction.magnitude() != 0:
-            self.direction = self.direction.normalize() # normalizes the vector to have a length of 1
-            #this way we can move in diagonal without increasing the speed
+        if self.direction.x != 0 and self.direction.y != 0:
+            speed = 2
+            if self.speed == 4:
+                speed = 3
+            if self.speed == 16:
+                speed = 11
+        
         self.hitbox.x += self.direction.x * speed
         self.collision('horizontal')
         self.hitbox.y += self.direction.y * speed
