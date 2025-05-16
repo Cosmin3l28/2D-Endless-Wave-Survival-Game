@@ -7,6 +7,24 @@ HEIGTH   = 810
 FPS      = 60
 TILESIZE = 64
 
+weapon_data = {
+    'AK-47': {
+        'fire-rate': 200,
+        'damage': 20,
+        'graphic': 'graphics/weapons/AK.png'
+    },
+    'GLOCK': {
+        'cooldown': 50,
+        'damage': 15,
+        'graphic': 'graphics/weapons/GLOCK.png'
+    },
+    'SHOTGUN': {
+        'cooldown': 10,
+        'damage': 400,
+        'graphic': 'graphics/weapons/SHOTGUN.png'
+    }
+}
+
 def import_csv_layout(path):
     terrain_map = []
     with open(path) as level_map:

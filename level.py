@@ -4,6 +4,7 @@ from player import Player
 from debug import debug
 from support import TILESIZE
 from support import import_csv_layout, import_folder
+from weapon import Weapon
 
 class Level:
     def __init__(self):
@@ -43,7 +44,10 @@ class Level:
         #             #Tile((x, y), [self.visible_sprites, self.obstacle_sprites])	
         #         if col == 'p':
         #             self.player = Player((x, y), [self.visible_sprites], self.obstacle_sprites)
-        self.player = Player((500, 500), [self.visible_sprites], self.obstacle_sprites) # we create the player at the position (100, 100)
+        self.player = Player((500, 500), [self.visible_sprites], self.obstacle_sprites, self.create_attck) # we create the player and add it to the visible sprites and the obstacle sprites
+    
+    def create_attck(self):
+        Weapon(self.player, [self.visible_sprites])
 
     def run(self): # here we display what happens on screen using our coustom camera that follows the player
         self.visible_sprites.custom_draw(self.player)

@@ -1,8 +1,8 @@
 import pygame
-from support import import_folder
+from support import *
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups,obstacle_sprites):
+    def __init__(self, pos, groups,obstacle_sprites, create_attck):
         super().__init__(groups)#we initiate the tile class as a sprite
         self.image = pygame.image.load('graphics/player/left_idle/sprite_invers_0.png').convert_alpha()#we load the image of the tile
         self.image = pygame.transform.scale(self.image, (96, 96)) # we want to scale the image to the size of the tile
@@ -33,6 +33,10 @@ class Player(pygame.sprite.Sprite):
         self.dash_cooldown = 4000
         
         self.obstacle_sprites = obstacle_sprites # we need this to check for collisions with the obstacles
+        
+        self.create_attck = create_attck # we want to create the attack when we press the mouse button
+        self.weapon_index = 0 # we want to set the weapon index to 0 so that we can use the first weapon
+        self.weapon = list(weapon_data.keys())[self.weapon_index] # we want to set the weapon to the first weapon in the list
  
     def import_player_assets(self):
         character_path = 'graphics/player/'
@@ -103,6 +107,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_speed = self.melee_speed
             self.frame_melee_index = 0
             self.frame_index = 0 # we want to reset the frame index so that we can see the attack animation
+            self.create_attck()
     
     def move(self, speed):
         if self.direction.x != 0 and self.direction.y != 0:
@@ -135,8 +140,7 @@ class Player(pygame.sprite.Sprite):
         if self.dash_c == True:
             if current_time - self.dash_start_time >= self.dash_cooldown:
                 self.dash_c = False
-            
-        
+                
     def collision(self, direction):
         if direction == 'horizontal':
             for sprite in self.obstacle_sprites:
@@ -226,8 +230,6 @@ class Player(pygame.sprite.Sprite):
             if current_time - self.melee_time >= self.melee_cooldown:
                 self.melee = False
     
-
-
     def animate(self):
         animation = self.animations[self.status]
         self.frame_index += self.animation_speed
