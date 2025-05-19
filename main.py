@@ -1,6 +1,6 @@
 import pygame, sys
 from level import Level
-from support import WIDTH, HEIGTH, FPS
+from support import WIDTH, HEIGHT, FPS
 from ui import MainMenu, PauseMenu
 
 
@@ -9,7 +9,7 @@ class Game:
 
         # general setup
         pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH, HEIGTH))
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption('Endless Survival')
         self.clock = pygame.time.Clock()
         
@@ -57,7 +57,7 @@ class Game:
                 if pause_result == 'menu':
                     self.level = None
                     self.game_state = "menu"
-
+                    
             pygame.display.update()
             self.clock.tick(FPS)
 

@@ -3,7 +3,7 @@ from os import walk
 import pygame
 
 WIDTH    = 1440	
-HEIGTH   = 810
+HEIGHT  = 810
 FPS      = 60
 TILESIZE = 64
 

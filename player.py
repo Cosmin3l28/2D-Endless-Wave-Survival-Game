@@ -11,6 +11,7 @@ class Player(pygame.sprite.Sprite):
         
         self.import_player_assets()
         self.status = 'down' # we want to set the status of the player to idle down
+        self.walk_status = 'down'
         self.frame_index = 0
         self.animation_speed = 0.1
         self.melee = False # we want to set the attacking status to false
@@ -52,6 +53,10 @@ class Player(pygame.sprite.Sprite):
             self.animations[animation] = import_folder(fullpath) # we get the list of images from the folder
 
     def input(self):
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+    
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
         # Reset direction vector before setting it
@@ -60,26 +65,27 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_w] and not keys[pygame.K_s]:
             self.direction.y = -1
-            self.status = 'up'
+            self.walk_status = 'up'
+
         elif keys[pygame.K_s] and not keys[pygame.K_w]:
             self.direction.y = 1
-            self.status = 'down'
+            self.walk_status = 'down'
         else:
             self.direction.y = 0
 
 
         if keys[pygame.K_a] and not keys[pygame.K_d]:
             self.direction.x = -1
-            self.status = 'left'
+            self.walk_status = 'left'
         elif keys[pygame.K_d] and not keys[pygame.K_a]:
             self.direction.x = 1
-            self.status = 'right'
+            self.walk_status = 'right'
         else:
             self.direction.x = 0
             
         
         if keys[pygame.K_LSHIFT]: #sprint
-            if self.stamina > 0:
+            if self.stamina > 0 and self.walk_status == self.status:
                 self.speed = 4
                 self.stamina -= 0.4 # we want to decrease the stamina when we sprint
             else:
@@ -99,6 +105,19 @@ class Player(pygame.sprite.Sprite):
             
         
         self.stamina = max(0, min(self.stamina, 100))
+
+        m = HEIGHT / WIDTH
+        diag1_y = m * mouse_x
+        diag2_y = -m * mouse_x + HEIGHT
+
+        if mouse_y > diag1_y and mouse_y > diag2_y:
+            self.status = 'down' 
+        elif mouse_y < diag1_y and mouse_y > diag2_y:
+            self.status = 'right'
+        elif mouse_y < diag1_y and mouse_y < diag2_y:
+            self.status = 'up'
+        elif mouse_y > diag1_y and mouse_y < diag2_y:
+            self.status = 'left'
 
         #attack
         if mouse[0] and self.melee == False:

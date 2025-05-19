@@ -1,4 +1,4 @@
-from support import WIDTH, HEIGTH
+from support import WIDTH, HEIGHT
 import pygame, sys
 
 class Button:
@@ -19,15 +19,15 @@ class Button:
 
 class MainMenu:
     def __init__(self):
-        self.play_button = Button("Play", 200, 40, (WIDTH//2 - 100, HEIGTH//2 - 70))
-        self.settings_button = Button("Settings", 200, 40, (WIDTH//2 - 100, HEIGTH//2 ))
-        self.quit_button = Button("Quit", 200, 40, (WIDTH//2 - 100, HEIGTH//2 + 70))
+        self.play_button = Button("Play", 200, 40, (WIDTH//2 - 100, HEIGHT//2 - 70))
+        self.settings_button = Button("Settings", 200, 40, (WIDTH//2 - 100, HEIGHT//2 ))
+        self.quit_button = Button("Quit", 200, 40, (WIDTH//2 - 100, HEIGHT//2 + 70))
         self.title_font = pygame.font.Font(None, 72)
 
     def draw(self, screen):
         screen.fill('#47ABA9')
         title_surf = self.title_font.render("Endless Survival", True, 'White')
-        title_rect = title_surf.get_rect(center=(WIDTH//2, HEIGTH//4))
+        title_rect = title_surf.get_rect(center=(WIDTH//2, HEIGHT//4))
         screen.blit(title_surf, title_rect)
         
         if self.play_button.draw(screen):
@@ -40,16 +40,16 @@ class MainMenu:
     
 class PauseMenu:
     def __init__(self):
-        self.overlay = pygame.Surface((WIDTH, HEIGTH), pygame.SRCALPHA)
+        self.overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.overlay.fill((0, 0, 0, 128))  # Overlay semi-transparent
         self.font = pygame.font.Font(None, 74)
-        self.button_menu = Button("Main Menu", 200, 40, (WIDTH //2 - 100, HEIGTH - 300))
+        self.button_menu = Button("Main Menu", 200, 40, (WIDTH //2 - 100, HEIGHT - 300))
         
     def draw(self, screen):
         screen.blit(self.overlay, (0, 0))
         # Text pauză
         text = self.font.render("PAUSED - Press ESC to resume", True, 'White')
-        text_rect = text.get_rect(center=(WIDTH // 2, HEIGTH // 2))
+        text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(text,text_rect)
 
         if self.button_menu.draw(screen):
