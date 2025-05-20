@@ -71,21 +71,26 @@ class Player(pygame.sprite.Sprite):
             self.direction.y = 1
             self.walk_status = 'down'
         else:
+            self.walk_status = ''
             self.direction.y = 0
 
 
         if keys[pygame.K_a] and not keys[pygame.K_d]:
             self.direction.x = -1
-            self.walk_status = 'left'
+            self.walk_status = self.walk_status + 'left'
         elif keys[pygame.K_d] and not keys[pygame.K_a]:
             self.direction.x = 1
-            self.walk_status = 'right'
+            self.walk_status = self.walk_status + 'right'
         else:
             self.direction.x = 0
+            self.walk_status = self.walk_status.replace('left', '')
+            self.walk_status = self.walk_status.replace('right', '')
+            
+        print(self.walk_status)
             
         
         if keys[pygame.K_LSHIFT]: #sprint
-            if self.stamina > 0 and self.walk_status == self.status:
+            if self.stamina > 0 and (self.status in self.walk_status):
                 self.speed = 4
                 self.stamina -= 0.4 # we want to decrease the stamina when we sprint
             else:

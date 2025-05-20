@@ -25,6 +25,28 @@ weapon_data = {
     }
 }
 
+moster_data = {
+    'enemy': {
+        'health': 100,
+        'damage': 10,
+        'speed': 2,
+        'attack_radius': 100,
+        'loot': 1,
+        'resistance': 10,
+        'graphic': 'graphics/enemies/enemy.png'
+    },
+    'boss': {
+        'health': 500,
+        'damage': 20,
+        'speed': 1,
+        'attack_radius': 200,
+        'loot': 3,
+        'resistance': 20,
+        'graphic': 'graphics/enemies/boss.png'
+    }
+}
+
+
 def import_csv_layout(path):
     terrain_map = []
     with open(path) as level_map:

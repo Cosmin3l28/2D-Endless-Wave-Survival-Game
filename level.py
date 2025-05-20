@@ -5,7 +5,7 @@ from debug import debug
 from support import TILESIZE
 from support import import_csv_layout, import_folder
 from weapon import Weapon
-
+from enemy import Enemy
 class Level:
     def __init__(self):
         # get the display surface
@@ -40,12 +40,19 @@ class Level:
                         if style == 'object':
                             surf = graphics['objects'][int(col)] # we get the surface of the object from the graphics dictionary
                             Tile((x, y), [self.visible_sprites, self.obstacle_sprites], 'object', surf) # we create the tile with the surface of the object
-       #         #if col == 'x':
-        #             #Tile((x, y), [self.visible_sprites, self.obstacle_sprites])	
-        #         if col == 'p':
-        #             self.player = Player((x, y), [self.visible_sprites], self.obstacle_sprites)
-        self.player = Player((500, 500), [self.visible_sprites], self.obstacle_sprites) # we create the player and add it to the visible sprites and the obstacle sprites
+                        
+                        
+        self.player = Player((1000, 1000), [self.visible_sprites], self.obstacle_sprites) # we create the player and add it to the visible sprites and the obstacle sprites
+    
+    def spawn_enemy(self, monster_name, pos):
+        if monster_name == 'enemy':
+            enemy = Enemy(monster_name, pos, [self.visible_sprites, self.obstacle_sprites])
+        elif monster_name == 'boss':
+            enemy = Enemy(monster_name, pos, [self.visible_sprites, self.obstacle_sprites])
+        else:
+            raise ValueError(f"Unknown monster name: {monster_name}")
         
+        return enemy
 
     def run(self): # here we display what happens on screen using our coustom camera that follows the player
         self.visible_sprites.custom_draw(self.player)
