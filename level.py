@@ -2,10 +2,11 @@ import pygame
 from tile import Tile
 from player import Player
 from debug import debug
-from support import TILESIZE
+from support import TILESIZE, WIDTH, HEIGHT
 from support import import_csv_layout, import_folder
 from weapon import Weapon
 from enemy import Enemy
+import random
 class Level:
     def __init__(self):
         # get the display surface
@@ -14,6 +15,9 @@ class Level:
         # create the sprite groups
         self.visible_sprites = YsortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
+        self.last_spawn_time = pygame.time.get_ticks()
+        self.spawn_interval = 2000 # spawn an enemy every 2 seconds
         
         # create the map
         self.create_map()
@@ -43,24 +47,30 @@ class Level:
                         
                         
         self.player = Player((1000, 1000), [self.visible_sprites], self.obstacle_sprites) # we create the player and add it to the visible sprites and the obstacle sprites
-    
-    def spawn_enemy(self, monster_name, pos):
-        if monster_name == 'enemy':
-            enemy = Enemy(monster_name, pos, [self.visible_sprites, self.obstacle_sprites])
-        elif monster_name == 'boss':
-            enemy = Enemy(monster_name, pos, [self.visible_sprites, self.obstacle_sprites])
-        else:
-            raise ValueError(f"Unknown monster name: {monster_name}")
+        self.player.level = self # we set the level of the player to the current level so that we can access the level from the player
         
-        return enemy
+    def spawn_random_enemy(self):
+        x = random.randint(0, 2400)
+        y = random.randint(0, 2400)
+        enemy = Enemy('enemy', (x,y), [self.visible_sprites, self.enemies], self.obstacle_sprites, self.player)
+        self.enemies.add(enemy)
 
     def run(self): # here we display what happens on screen using our coustom camera that follows the player
+
+        # spawn enemies at random intervals
+        now = pygame.time.get_ticks()
+        if now - self.last_spawn_time > self.spawn_interval:
+            self.spawn_random_enemy()
+            self.last_spawn_time = now
+        self.enemies.update()
+
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
         self.player.draw_stamina_bar(self.display_surface)
         self.player.draw_health_bar(self.display_surface)
         # debug(self.player.direction)
         debug(self.player.speed)
+        
         
 class YsortCameraGroup(pygame.sprite.Group): # to create a custom camera that follows the player
     def __init__(self):

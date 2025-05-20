@@ -133,8 +133,14 @@ class Player(pygame.sprite.Sprite):
             self.animation_speed = self.melee_speed
             self.frame_melee_index = 0
             self.frame_index = 0 # we want to reset the frame index so that we can see the attack animation
-            
-    
+
+            for enemy in self.level.enemies:
+                if self.rect.colliderect(enemy.rect):
+                    enemy.health -= 100  # sau cât vrei tu
+                    if enemy.health <= 0:
+                        print('kill')
+                        enemy.kill()
+               
     def move(self, speed):
         if self.direction.x != 0 and self.direction.y != 0:
             speed = 2
