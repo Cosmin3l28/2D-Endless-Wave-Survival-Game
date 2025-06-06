@@ -68,7 +68,7 @@ Contribuțiile sunt binevenite! Pentru a contribui:
 2. Creează un branch nou: `git checkout -b feature/noua-ta-functie`
 3. Fă commit la modificări: `git commit -am 'Adaugă o nouă funcționalitate'`
 4. Fă push la branch: `git push origin feature/noua-ta-functie`
-5. Deschide un Pull Request
+5. Deschide un Pull Request.
 
 ## Licență
 
