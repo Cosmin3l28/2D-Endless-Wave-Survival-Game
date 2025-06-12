@@ -1,7 +1,9 @@
 import pygame, sys
+import random
 from level import Level
 from support import WIDTH, HEIGHT, FPS
 from ui import MainMenu, PauseMenu
+
 
 class Game:
     def __init__(self):
@@ -13,15 +15,24 @@ class Game:
         self.main_menu = MainMenu()
         self.pause_menu = PauseMenu()
 
+        self.upgrade_pool = [
+            {'name': 'Health +20', 'cost': 5, 'rarity': 'common', 'apply': lambda p: setattr(p, 'health', p.health + 20)},
+            {'name': 'Damage +10', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'damage', p.damage + 10)},
+            {'name': 'Speed +0.5', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'speed', p.speed + 0.5)},
+            {'name': 'Health +50', 'cost': 15, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'health', p.health + 50)},
+            {'name': 'Damage +25', 'cost': 18, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'damage', p.damage + 25)},
+            {'name': 'Speed +1', 'cost': 20, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'speed', p.speed + 1)},
+        ]
+
+        self.rarity_weights = {'common': 10, 'rare': 2}
+        self.upgrade_menu = None
+        self.current_wave = 1
+
         self.font = pygame.font.SysFont(None, 60)
         self.small_font = pygame.font.SysFont(None, 40)
 
         self.game_state = 'menu'
         self.level = None
-
-    def reset_game(self):
-        self.level = Level()
-        self.game_state = 'playing'
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -88,8 +99,27 @@ class Game:
         self.reset_game()
         while True:
             self.handle_events()
-            self.update()
-            pygame.display.flip()
+            if self.game_state == 'menu':
+                menu_result = self.main_menu.draw(self.screen)
+                if menu_result == "play":
+                    self.level = Level()
+                    self.game_state = "playing"
+                elif menu_result == "quit":
+                    pygame.quit()
+                    sys.exit()
+            
+            elif self.game_state == "playing":
+                self.screen.fill('#47ABA9')
+                self.level.run()
+
+            elif self.game_state == "paused":
+                self.level.visible_sprites.custom_draw(self.level.player)  # Redesenează ultimul frame
+                pause_result = self.pause_menu.draw(self.screen)
+                if pause_result == 'menu':
+                    self.level = None
+                    self.game_state = "menu"
+                    
+            pygame.display.update()
             self.clock.tick(FPS)
 
 if __name__ == "__main__":
