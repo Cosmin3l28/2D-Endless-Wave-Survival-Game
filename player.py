@@ -26,6 +26,8 @@ class Player(pygame.sprite.Sprite):
         self.speed = 2
         self.stamina = 100
         self.health = 100
+        self.gold = 0
+        self.damage = 50 
         
         self.weapon_index = 0 # we want to set the weapon index to 0 so that we can use the first weapon
         self.weapon = list(weapon_data.keys())[self.weapon_index] # we want to set the weapon to the first weapon in the list
@@ -179,7 +181,7 @@ class Player(pygame.sprite.Sprite):
         self.last_shot = current_time
         bullet = Bullet(self.weapon.rect.center, self.weapon.direction,
                         [self.level.visible_sprites, self.level.bullets],
-                        self.obstacle_sprites, self.level.enemies)
+                         self.obstacle_sprites, self.level.enemies, self, self.damage)
         self.level.bullets.add(bullet)
 
     def cooldown_dash(self):
@@ -235,6 +237,12 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(surface, color, (10, 20, current_width, 35), border_radius = 20)
         #### 2. Actualizează stamina în funcție de acțiunile jucătorului
 
+    def draw_gold(self, surface):
+        font = pygame.font.Font(None, 32)
+        text = font.render(f"Gold: {self.gold}", True, 'yellow')
+        surface.blit(text, (10, 130))
+
+    # Function to take damage
     def take_damage(self, damage):
         self.health -= damage
         if self.health <= 0:

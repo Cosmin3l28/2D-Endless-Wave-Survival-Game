@@ -21,8 +21,23 @@ class Level:
         self.last_spawn_time = pygame.time.get_ticks()
         self.spawn_interval = 2000 # spawn an enemy every 2 seconds
         
+
+        self.enemy_bullets = pygame.sprite.Group() # group for enemy bullets
+        self.wave = 1
+        self.wave_finished = False
+
         # create the map
         self.create_map()
+
+    def start_wave(self, wave):
+        self.wave = wave
+        self.wave_finished = False
+        enemy_count = 5 + (wave - 1) * 2
+        for i in range(enemy_count):
+            if wave > 2 and random.random() < 0.3:
+                self.spawn_random_enemy('shooter')
+            else:
+                self.spawn_random_enemy('enemy')
     
     def create_map(self):
         layout = {
@@ -51,20 +66,22 @@ class Level:
         self.player = Player((1000, 1000), [self.visible_sprites], self.obstacle_sprites) # we create the player and add it to the visible sprites and the obstacle sprites
         self.player.level = self # we set the level of the player to the current level so that we can access the level from the player
         
-    def spawn_random_enemy(self):
-        x = random.randint(0, 2400)
-        y = random.randint(0, 2400)
-        enemy = Enemy('enemy', (x,y), [self.visible_sprites, self.enemies], self.obstacle_sprites, self.player)
-        self.enemies.add(enemy)
+    def spawn_random_enemy(self, enemy_type='enemy'):
+        x = random.randint(200, 2200)
+        y = random.randint(200, 2200)
+        enemy = Enemy(enemy_type, (x, y),
+                      [self.visible_sprites, self.enemies],
+                      self.obstacle_sprites, self.player, self.enemy_bullets)
+        self.enemies.add(enemy)  # add the enemy to the enemies group
 
     def run(self): # here we display what happens on screen using our coustom camera that follows the player
 
         # spawn enemies at random intervals
-        now = pygame.time.get_ticks()
-        if now - self.last_spawn_time > self.spawn_interval:
-            self.spawn_random_enemy()
-            self.last_spawn_time = now
+        if len(self.enemies) == 0 and not self.wave_finished:
+            self.wave_finished = True
+
         self.enemies.update()
+        self.enemy_bullets.update()
         self.bullets.update()
 
         for enemy in self.enemies:
@@ -75,8 +92,11 @@ class Level:
         self.visible_sprites.update()
         self.player.draw_stamina_bar(self.display_surface)
         self.player.draw_health_bar(self.display_surface)
+
+        self.player.draw_gold(self.display_surface)
         # debug(self.player.direction)
         debug(self.player.speed)
+        return self.wave_finished
         
         
 class YsortCameraGroup(pygame.sprite.Group): # to create a custom camera that follows the player

@@ -1,7 +1,7 @@
 import pygame, sys
 from level import Level
 from support import WIDTH, HEIGHT, FPS
-from ui import MainMenu, PauseMenu
+from ui import MainMenu, PauseMenu, UpgradeMenu
 
 
 class Game:
@@ -15,6 +15,14 @@ class Game:
         
         self.main_menu = MainMenu()
         self.pause_menu = PauseMenu()
+
+        self.upgrades = [
+            {'name': 'Health +20', 'cost': 5, 'apply': lambda p: setattr(p, 'health', p.health + 20)},
+            {'name': 'Damage +10', 'cost': 5, 'apply': lambda p: setattr(p, 'damage', p.damage + 10)},
+            {'name': 'Speed +0.5', 'cost': 5, 'apply': lambda p: setattr(p, 'speed', p.speed + 0.5)},
+        ]
+        self.upgrade_menu = UpgradeMenu(self.upgrades)
+        self.current_wave = 1
 
         #actual state
         self.game_state = 'menu'
@@ -42,6 +50,8 @@ class Game:
                 menu_result = self.main_menu.draw(self.screen)
                 if menu_result == "play":
                     self.level = Level()
+                    # Initialize the first wave
+                    self.level.start_wave(self.current_wave)
                     self.game_state = "playing"
                 elif menu_result == "quit":
                     pygame.quit()
@@ -49,7 +59,10 @@ class Game:
             
             elif self.game_state == "playing":
                 self.screen.fill('#47ABA9')
-                self.level.run()
+                # Update and draw the level
+                wave_done = self.level.run()
+                if wave_done:
+                    self.game_state = 'upgrade'
 
             elif self.game_state == "paused":
                 self.level.visible_sprites.custom_draw(self.level.player)  # Redesenează ultimul frame
@@ -57,6 +70,14 @@ class Game:
                 if pause_result == 'menu':
                     self.level = None
                     self.game_state = "menu"
+                
+            #upgrade menu
+            elif self.game_state == 'upgrade':
+                upgrade_result = self.upgrade_menu.draw(self.screen, self.level.player)
+                if upgrade_result == 'close':
+                    self.current_wave += 1
+                    self.level.start_wave(self.current_wave)
+                    self.game_state = 'playing'
                     
             pygame.display.update()
             self.clock.tick(FPS)

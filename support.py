@@ -35,6 +35,16 @@ moster_data = {
         'resistance': 10,
         'graphic': 'graphics/enemies/enemy.png'
     },
+    
+    'shooter': {
+        'health': 80,
+        'damage': 8,
+        'speed': 1.5,
+        'shoot_interval': 1200,
+        'loot': 2,
+        'graphic': 'graphics/enemies/enemy.png'
+    },
+
     'boss': {
         'health': 500,
         'damage': 20,
