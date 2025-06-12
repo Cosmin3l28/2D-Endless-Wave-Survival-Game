@@ -36,14 +36,14 @@ class Bullet(pygame.sprite.Sprite):
 class EnemyBullet(pygame.sprite.Sprite):
     def __init__(self, pos, direction, groups, obstacle_sprites, player, damage=10):
         super().__init__(groups)
-        self.image = pygame.Surface((8, 3))
+        self.image = pygame.Surface((12, 6))
         self.image.fill('red')
         self.rect = self.image.get_rect(center=pos)
         self.direction = pygame.math.Vector2(direction)
         if self.direction.length() == 0:
             self.direction = pygame.math.Vector2(1, 0)
         self.direction = self.direction.normalize()
-        self.speed = 8
+        self.speed = 5
         self.obstacle_sprites = obstacle_sprites
         self.player = player
         self.damage = damage

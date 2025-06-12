@@ -72,7 +72,8 @@ class Level:
         enemy = Enemy(enemy_type, (x, y),
                       [self.visible_sprites, self.enemies],
                       self.obstacle_sprites, self.player, self.enemy_bullets)
-        self.enemies.add(enemy)  # add the enemy to the enemies group
+        # scale enemy speed based on current wave
+        enemy.speed += (self.wave - 1) * 0.2
 
     def run(self): # here we display what happens on screen using our coustom camera that follows the player
 

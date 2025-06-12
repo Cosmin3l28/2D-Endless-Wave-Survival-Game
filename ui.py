@@ -66,6 +66,7 @@ class UpgradeMenu:
         for i, up in enumerate(upgrades):
             btn = Button(f"{up['name']} ({up['cost']})", 250, 40, (WIDTH//2 - 125, start_y + i*60))
             self.buttons.append(btn)
+        self.skip_button = Button("Skip", 250, 40, (WIDTH//2 - 125, start_y + len(upgrades)*60))
 
     def draw(self, screen, player):
         screen.blit(self.overlay, (0, 0))
@@ -76,4 +77,6 @@ class UpgradeMenu:
                     player.gold -= upgrade['cost']
                     upgrade['apply'](player)
                     return 'close'
-        return 'upgrade'
+        if self.skip_button.draw(screen):
+            return 'close'
+        return 'upgrade'    

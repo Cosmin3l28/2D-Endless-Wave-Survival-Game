@@ -1,4 +1,5 @@
 import pygame, sys
+import random
 from level import Level
 from support import WIDTH, HEIGHT, FPS
 from ui import MainMenu, PauseMenu, UpgradeMenu
@@ -16,17 +17,32 @@ class Game:
         self.main_menu = MainMenu()
         self.pause_menu = PauseMenu()
 
-        self.upgrades = [
-            {'name': 'Health +20', 'cost': 5, 'apply': lambda p: setattr(p, 'health', p.health + 20)},
-            {'name': 'Damage +10', 'cost': 5, 'apply': lambda p: setattr(p, 'damage', p.damage + 10)},
-            {'name': 'Speed +0.5', 'cost': 5, 'apply': lambda p: setattr(p, 'speed', p.speed + 0.5)},
+        self.upgrade_pool = [
+            {'name': 'Health +20', 'cost': 5, 'rarity': 'common', 'apply': lambda p: setattr(p, 'health', p.health + 20)},
+            {'name': 'Damage +10', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'damage', p.damage + 10)},
+            {'name': 'Speed +0.5', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'speed', p.speed + 0.5)},
+            {'name': 'Health +50', 'cost': 15, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'health', p.health + 50)},
+            {'name': 'Damage +25', 'cost': 18, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'damage', p.damage + 25)},
+            {'name': 'Speed +1', 'cost': 20, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'speed', p.speed + 1)},
         ]
-        self.upgrade_menu = UpgradeMenu(self.upgrades)
+
+        self.rarity_weights = {'common': 10, 'rare': 2}
+        self.upgrade_menu = None
         self.current_wave = 1
 
         #actual state
         self.game_state = 'menu'
         self.level = None
+
+    def generate_upgrade_menu(self):
+        pool = self.upgrade_pool[:]
+        selected = []
+        for _ in range(min(3, len(pool))):
+            weights = [self.rarity_weights[u['rarity']] for u in pool]
+            choice = random.choices(pool, weights=weights, k=1)[0]
+            selected.append(choice)
+            pool.remove(choice)
+        self.upgrade_menu = UpgradeMenu(selected)
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -62,6 +78,7 @@ class Game:
                 # Update and draw the level
                 wave_done = self.level.run()
                 if wave_done:
+                    self.generate_upgrade_menu()
                     self.game_state = 'upgrade'
 
             elif self.game_state == "paused":

@@ -17,7 +17,7 @@ class Enemy(pygame.sprite.Sprite):
         self.player = player
 
         self.health = data.get('health', 100)
-        self.speed = data.get('speed', 0.01)
+        self.speed = data.get('speed', 2)
         self.loot = data.get('loot', 1)
         self.damage = data.get('damage', 10)
         self.bullet_group = bullet_group    
@@ -25,9 +25,16 @@ class Enemy(pygame.sprite.Sprite):
         self.float_y = float(self.hitbox.y)
         self.shoot_interval = data.get('shoot_interval')
         self.last_shot = pygame.time.get_ticks()
+        self.shoot_pause = 400
+        self.shooting = False
+        self.pause_start = 0
 
     def update(self):
-        self.move_towards_player()
+        if self.shooting:
+            if pygame.time.get_ticks() - self.pause_start >= self.shoot_pause:
+                self.shooting = False
+        else:
+            self.move_towards_player()
         if self.shoot_interval:
             self.shoot()
 
@@ -75,10 +82,19 @@ class Enemy(pygame.sprite.Sprite):
     
     def shoot(self):
         current_time = pygame.time.get_ticks()
+        if self.shooting:
+            return
         if current_time - self.last_shot >= self.shoot_interval:
             direction = pygame.math.Vector2(self.player.rect.center) - pygame.math.Vector2(self.rect.center)
-            bullet = EnemyBullet(self.rect.center, direction,
-                                 [self.player.level.visible_sprites, self.bullet_group],
-                                 self.obstacle_sprites, self.player, self.damage)
+            bullet = EnemyBullet(
+                self.rect.center,
+                direction,
+                [self.player.level.visible_sprites, self.bullet_group],
+                self.obstacle_sprites,
+                self.player,
+                self.damage,
+            )
             self.bullet_group.add(bullet)
             self.last_shot = current_time
+            self.shooting = True
+            self.pause_start = current_time
