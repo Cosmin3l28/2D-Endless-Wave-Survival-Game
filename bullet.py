@@ -24,8 +24,6 @@ class Bullet(pygame.sprite.Sprite):
                 return
         for enemy in list(self.enemies):
             if self.rect.colliderect(enemy.rect):
-                enemy.health -= 50
-                if enemy.health <= 0:
-                    enemy.kill()
+                enemy.take_damage(50)  # ← apelăm corect funcția care pornește animatia
                 self.kill()
                 return

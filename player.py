@@ -2,6 +2,7 @@ import pygame
 from support import *
 from weapon import Weapon
 from bullet import Bullet
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups,obstacle_sprites):
         super().__init__(groups)#we initiate the tile class as a sprite
@@ -9,7 +10,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (96, 96)) # we want to scale the image to the size of the tile
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-60, -24) # we want to make the hitbox smaller than the tile so that we can see the tile and not the hitbox
-        
+
         self.import_player_assets()
         self.status = 'down' # we want to set the status of the player to idle down
         self.walk_status = 'down'
@@ -26,6 +27,14 @@ class Player(pygame.sprite.Sprite):
         self.speed = 2
         self.stamina = 100
         self.health = 100
+
+        # damage flash system
+        self.damaged = False  # nou: indicator că jucătorul a fost lovit recent
+        self.last_damaged_time = 0  # nou: timpul ultimei lovituri
+        self.damage_flash_duration = 200  # nou: cât timp apare overlay-ul (în ms)
+        self.can_flash = True  # nou: permite afișarea flash-ului doar dacă e activ
+        self.flash_cooldown = 900  # nou: timp minim între flash-uri
+        self.last_flash_time = 0  # nou: marcăm momentul când a fost ultimul flash
         
         self.weapon_index = 0 # we want to set the weapon index to 0 so that we can use the first weapon
         self.weapon = list(weapon_data.keys())[self.weapon_index] # we want to set the weapon to the first weapon in the list
@@ -42,7 +51,7 @@ class Player(pygame.sprite.Sprite):
         # self.visible_sprites = visible_sprites
         self.last_shot = 0
         self.shot_cooldown = 500  
-        
+
     def import_player_assets(self):
         character_path = 'graphics/player/'
         self.animations = {
@@ -55,10 +64,7 @@ class Player(pygame.sprite.Sprite):
             self.animations[animation] = import_folder(fullpath) # we get the list of images from the folder
 
     def input(self):
-
         mouse_x, mouse_y = pygame.mouse.get_pos()
-
-    
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
         # Reset direction vector before setting it
@@ -68,14 +74,12 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_w] and not keys[pygame.K_s]:
             self.direction.y = -1
             self.walk_status = 'up'
-
         elif keys[pygame.K_s] and not keys[pygame.K_w]:
             self.direction.y = 1
             self.walk_status = 'down'
         else:
             self.walk_status = ''
             self.direction.y = 0
-
 
         if keys[pygame.K_a] and not keys[pygame.K_d]:
             self.direction.x = -1
@@ -88,9 +92,6 @@ class Player(pygame.sprite.Sprite):
             self.walk_status = self.walk_status.replace('left', '')
             self.walk_status = self.walk_status.replace('right', '')
             
-        #print(self.walk_status)
-            
-        
         if keys[pygame.K_LSHIFT]: #sprint
             if self.stamina > 0 and (self.status in self.walk_status):
                 self.speed = 4
@@ -109,7 +110,6 @@ class Player(pygame.sprite.Sprite):
             self.dash_start_time = pygame.time.get_ticks()
             self.stamina -= 35  # Reduce stamina when dashing
             self.dash_c = True
-            
         
         self.stamina = max(0, min(self.stamina, 100))
 
@@ -138,11 +138,9 @@ class Player(pygame.sprite.Sprite):
 
             for enemy in self.level.enemies:
                 if self.rect.colliderect(enemy.rect):
-                    enemy.health -= 100  # sau cât vrei tu
-                    if enemy.health <= 0:
-                        print('kill')
-                        enemy.kill()
-               
+                     enemy.take_damage(100)  # folosim metoda corectă
+                    
+
     def move(self, speed):
         if self.direction.x != 0 and self.direction.y != 0:
             speed = 2
@@ -156,11 +154,10 @@ class Player(pygame.sprite.Sprite):
         self.hitbox.y += self.direction.y * speed
         self.collision('vertical')
         self.rect.center = self.hitbox.center # we want to move the rect with the hitbox so that we can see the player moving
-        
+
     def dash(self):
         if self.is_dashing:
             current_time = pygame.time.get_ticks()
-            
             if current_time - self.dash_start_time <= self.dash_duration:
                 self.speed = 16  # Increase speed during dash
                 self.animation_speed = self.dash_animation_speed  # Speed up animation
@@ -187,7 +184,7 @@ class Player(pygame.sprite.Sprite):
         if self.dash_c == True:
             if current_time - self.dash_start_time >= self.dash_cooldown:
                 self.dash_c = False
-                
+
     def collision(self, direction):
         if direction == 'horizontal':
             for sprite in self.obstacle_sprites:
@@ -196,7 +193,6 @@ class Player(pygame.sprite.Sprite):
                         self.hitbox.right = sprite.hitbox.left # right collision
                     if self.direction.x < 0:
                         self.hitbox.left = sprite.hitbox.right # left collision
-        
         if direction == 'vertical':
             for sprite in self.obstacle_sprites:
                 if self.hitbox.colliderect(sprite.hitbox):
@@ -206,39 +202,32 @@ class Player(pygame.sprite.Sprite):
                         self.hitbox.top = sprite.hitbox.bottom  # up collision
 
     def draw_stamina_bar(self, surface):
-        # Calculăm lungimea barei în funcție de stamina curentă
         current_width = (self.stamina / 100) * 300
-
-        # Culori
         background_color = 'black'
         color = 'white'
-
-        # Desenăm fundalul barei
         pygame.draw.rect(surface, background_color, (10, 80, 300, 35), border_radius = 20)
-
-        # Desenăm bara de stamina
         pygame.draw.rect(surface, color, (10, 80, current_width, 35), border_radius = 20)
-        #### 2. Actualizează stamina în funcție de acțiunile jucătorului
-        
-    def draw_health_bar(self, surface):
-        # Calculăm lungimea barei în funcție de stamina curentă
-        current_width = (self.health / 100) * 300
 
-        # Culori
+    def draw_health_bar(self, surface):
+        current_width = (self.health / 100) * 300
         background_color = 'red'
         color = 'green'
-
-        # Desenăm fundalul barei
         pygame.draw.rect(surface, background_color, (10, 20, 300, 35), border_radius = 20)
-
-        # Desenăm bara de stamina
         pygame.draw.rect(surface, color, (10, 20, current_width, 35), border_radius = 20)
-        #### 2. Actualizează stamina în funcție de acțiunile jucătorului
 
     def take_damage(self, damage):
         self.health -= damage
-        if self.health <= 0:
+        if self.health < 0:
+            self.health = 0
+        if self.health == 0:
             print('Player is dead')
+
+        current_time = pygame.time.get_ticks()
+        if self.can_flash:
+            self.damaged = True
+            self.last_damaged_time = current_time
+            self.can_flash = False
+            self.last_flash_time = current_time
 
     def update(self):
         self.input()
@@ -250,13 +239,17 @@ class Player(pygame.sprite.Sprite):
         self.dash()
         self.animate()
         self.move(self.speed)
-        
+
+        # cooldown pentru flash roșu (nu se poate activa non-stop)
+        if not self.can_flash:
+            if pygame.time.get_ticks() - self.last_flash_time > self.flash_cooldown:
+                self.can_flash = True
+
     def run(self):
         self.visible_sprites.draw(self.display_surface)
         self.visible_sprites.update()
 
     def get_status(self):
-
         #idle status
         if self.direction.x == 0 and self.direction.y == 0:
             if not 'idle' in self.status:
@@ -264,7 +257,6 @@ class Player(pygame.sprite.Sprite):
                     self.status = self.status.replace('_attack', '_idle')
                 else:
                     self.status = self.status + '_idle'
-
         if self.animation_melee == True:
             self.direction.x = 0
             self.direction.y = 0
@@ -283,7 +275,7 @@ class Player(pygame.sprite.Sprite):
                 self.animation_speed = 0.1
             if current_time - self.melee_time >= self.melee_cooldown:
                 self.melee = False
-    
+
     def animate(self):
         animation = self.animations[self.status]
         self.frame_index += self.animation_speed
