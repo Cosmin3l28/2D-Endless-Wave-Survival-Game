@@ -1,6 +1,7 @@
 import pygame
 from support import *
 from weapon import Weapon
+from bullet import Bullet
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups,obstacle_sprites):
         super().__init__(groups)#we initiate the tile class as a sprite
@@ -39,7 +40,8 @@ class Player(pygame.sprite.Sprite):
         
         self.obstacle_sprites = obstacle_sprites # we need this to check for collisions with the obstacles
         # self.visible_sprites = visible_sprites
-        
+        self.last_shot = 0
+        self.shot_cooldown = 500  
         
     def import_player_assets(self):
         character_path = 'graphics/player/'
@@ -86,7 +88,7 @@ class Player(pygame.sprite.Sprite):
             self.walk_status = self.walk_status.replace('left', '')
             self.walk_status = self.walk_status.replace('right', '')
             
-        print(self.walk_status)
+        #print(self.walk_status)
             
         
         if keys[pygame.K_LSHIFT]: #sprint
@@ -166,7 +168,20 @@ class Player(pygame.sprite.Sprite):
                 self.is_dashing = False
                 self.speed = 4  # Reset to normal speed
                 self.animation_speed = 0.1  # Reset animation speed to the normal one
-                
+
+    def shoot(self):
+        mouse = pygame.mouse.get_pressed()
+        if not mouse[2]:
+            return
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot < self.shot_cooldown:
+            return
+        self.last_shot = current_time
+        bullet = Bullet(self.weapon.rect.center, self.weapon.direction,
+                        [self.level.visible_sprites, self.level.bullets],
+                        self.obstacle_sprites, self.level.enemies)
+        self.level.bullets.add(bullet)
+
     def cooldown_dash(self):
         current_time = pygame.time.get_ticks()
         if self.dash_c == True:
@@ -220,12 +235,18 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(surface, color, (10, 20, current_width, 35), border_radius = 20)
         #### 2. Actualizează stamina în funcție de acțiunile jucătorului
 
+    def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            print('Player is dead')
+
     def update(self):
         self.input()
         self.cooldown_melee()    
         self.cooldown_dash()
         self.get_status()
         self.weapon.update_weapon()
+        self.shoot()
         self.dash()
         self.animate()
         self.move(self.speed)

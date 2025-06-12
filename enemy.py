@@ -23,7 +23,7 @@ class Enemy(pygame.sprite.Sprite):
             dx = self.player.rect.centerx - self.rect.centerx
             dy = self.player.rect.centery - self.rect.centery
             dist = max(1, (dx**2 + dy**2) ** 0.5)
-            print(dist)
+            #print(dist)
             self.direction.x = dx / dist
             self.direction.y = dy / dist
             self.move(0.7)

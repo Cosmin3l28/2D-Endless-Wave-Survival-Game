@@ -5,6 +5,7 @@ from debug import debug
 from support import TILESIZE, WIDTH, HEIGHT
 from support import import_csv_layout, import_folder
 from weapon import Weapon
+from bullet import Bullet
 from enemy import Enemy
 import random
 class Level:
@@ -16,6 +17,7 @@ class Level:
         self.visible_sprites = YsortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
+        self.bullets = pygame.sprite.Group()
         self.last_spawn_time = pygame.time.get_ticks()
         self.spawn_interval = 2000 # spawn an enemy every 2 seconds
         
@@ -63,6 +65,11 @@ class Level:
             self.spawn_random_enemy()
             self.last_spawn_time = now
         self.enemies.update()
+        self.bullets.update()
+
+        for enemy in self.enemies:
+            if self.player.rect.colliderect(enemy.rect):
+                self.player.take_damage(0.2) # if the player collides with an enemy, take damage
 
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
