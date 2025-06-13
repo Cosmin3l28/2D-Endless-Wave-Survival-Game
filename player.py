@@ -27,6 +27,9 @@ class Player(pygame.sprite.Sprite):
         self.speed = 2
         self.stamina = 100
         self.health = 100
+<<<<<<< HEAD
+        self.gold = 0
+        self.damage = 50 
 
         # damage flash system
         self.damaged = False  # nou: indicator că jucătorul a fost lovit recent
@@ -35,6 +38,8 @@ class Player(pygame.sprite.Sprite):
         self.can_flash = True  # nou: permite afișarea flash-ului doar dacă e activ
         self.flash_cooldown = 900  # nou: timp minim între flash-uri
         self.last_flash_time = 0  # nou: marcăm momentul când a fost ultimul flash
+=======
+>>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
         
         self.weapon_index = 0 # we want to set the weapon index to 0 so that we can use the first weapon
         self.weapon = list(weapon_data.keys())[self.weapon_index] # we want to set the weapon to the first weapon in the list
@@ -138,8 +143,9 @@ class Player(pygame.sprite.Sprite):
 
             for enemy in self.level.enemies:
                 if self.rect.colliderect(enemy.rect):
-                     enemy.take_damage(100)  # folosim metoda corectă
-                    
+                    enemy.take_damage(100)  # folosim metoda corectă
+                    if enemy.health <= 0:
+                        enemy.kill()
 
     def move(self, speed):
         if self.direction.x != 0 and self.direction.y != 0:
@@ -176,7 +182,11 @@ class Player(pygame.sprite.Sprite):
         self.last_shot = current_time
         bullet = Bullet(self.weapon.rect.center, self.weapon.direction,
                         [self.level.visible_sprites, self.level.bullets],
-                        self.obstacle_sprites, self.level.enemies)
+<<<<<<< HEAD
+                        self.obstacle_sprites, self.level.enemies, self, self.damage)
+=======
+                         self.obstacle_sprites, self.level.enemies, self, self.damage)
+>>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
         self.level.bullets.add(bullet)
 
     def cooldown_dash(self):
@@ -215,6 +225,12 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(surface, background_color, (10, 20, 300, 35), border_radius = 20)
         pygame.draw.rect(surface, color, (10, 20, current_width, 35), border_radius = 20)
 
+    def draw_gold(self, surface):
+        font = pygame.font.Font(None, 32)
+        text = font.render(f"Gold: {self.gold}", True, 'yellow')
+        surface.blit(text, (10, 130))
+
+    # Function to take damage
     def take_damage(self, damage):
         self.health -= damage
         if self.health < 0:
@@ -228,6 +244,11 @@ class Player(pygame.sprite.Sprite):
             self.last_damaged_time = current_time
             self.can_flash = False
             self.last_flash_time = current_time
+
+    def draw_gold(self, surface):
+        font = pygame.font.Font(None, 32)
+        text = font.render(f"Gold: {self.gold}", True, 'yellow')
+        surface.blit(text, (10, 130))
 
     def update(self):
         self.input()
