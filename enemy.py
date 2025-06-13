@@ -1,8 +1,12 @@
 import pygame
+<<<<<<< HEAD
 from support import import_folder
 import os
 from support import moster_data
 from bullet import EnemyBullet
+=======
+from support import *
+>>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, monster_name, pos, groups, obstacle_sprites=None, player=None, bullet_group=None):
@@ -11,6 +15,7 @@ class Enemy(pygame.sprite.Sprite):
         self.frame_index = 0
         self.animation_speed = 0.15
         self.direction = pygame.math.Vector2()
+<<<<<<< HEAD
 
         data = moster_data[monster_name]
         self.type = monster_name
@@ -52,6 +57,19 @@ class Enemy(pygame.sprite.Sprite):
 
         self.health = data.get('health', 100)
         self.speed = data.get('speed', 2)
+=======
+        self.image = pygame.Surface((64, 64))
+        self.image.fill('black')  # <-- dreptunghi negru
+        self.rect = self.image.get_rect(topleft=pos)
+        self.hitbox = self.rect.inflate(-10, -10)
+        self.obstacle_sprites = obstacle_sprites
+        self.player = player
+        self.health = 100
+
+        self.health = data.get('health', 100)
+        self.speed = data.get('speed', 2)
+        self.loot = data.get('loot', 1)
+>>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
         self.damage = data.get('damage', 10)
         self.bullet_group = bullet_group    
         self.float_x = float(self.hitbox.x)
@@ -111,6 +129,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(frame, (192, 192))
 
     def update(self):
+<<<<<<< HEAD
         if self.health <= 0:
             if self.alive:
                 self.alive = False
@@ -156,6 +175,15 @@ class Enemy(pygame.sprite.Sprite):
             if attack_zone.colliderect(self.player.rect):
                 self.player.take_damage(10)
                 self.has_damaged_player = True
+=======
+            dx = self.player.rect.centerx - self.rect.centerx
+            dy = self.player.rect.centery - self.rect.centery
+            dist = max(1, (dx**2 + dy**2) ** 0.5)
+            #print(dist)
+            self.direction.x = dx / dist
+            self.direction.y = dy / dist
+            self.move(0.7)
+>>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
 
     def move(self, speed):
         self.float_x += self.direction.x * speed
@@ -186,6 +214,7 @@ class Enemy(pygame.sprite.Sprite):
                         self.float_y = self.hitbox.y
                     if self.direction.y < 0:
                         self.hitbox.top = sprite.hitbox.bottom
+<<<<<<< HEAD
                         self.float_y = self.hitbox.y
 
     def take_damage(self, amount):
@@ -211,3 +240,6 @@ class Enemy(pygame.sprite.Sprite):
             self.last_shot = current_time
             self.shooting = True
             self.pause_start = current_time
+=======
+                        self.float_y = self.hitbox.y
+>>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
