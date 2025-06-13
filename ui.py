@@ -55,3 +55,28 @@ class PauseMenu:
         if self.button_menu.draw(screen):
             return "menu"
         return "paused"
+    
+class UpgradeMenu:
+    def __init__(self, upgrades):
+        self.overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        self.overlay.fill((0, 0, 0, 180))
+        self.upgrades = upgrades
+        self.buttons = []
+        start_y = HEIGHT // 2 - 60
+        for i, up in enumerate(upgrades):
+            btn = Button(f"{up['name']} ({up['cost']})", 250, 40, (WIDTH//2 - 125, start_y + i*60))
+            self.buttons.append(btn)
+        self.skip_button = Button("Skip", 250, 40, (WIDTH//2 - 125, start_y + len(upgrades)*60))
+
+    def draw(self, screen, player):
+        screen.blit(self.overlay, (0, 0))
+        for i, btn in enumerate(self.buttons):
+            if btn.draw(screen):
+                upgrade = self.upgrades[i]
+                if player.gold >= upgrade['cost']:
+                    player.gold -= upgrade['cost']
+                    upgrade['apply'](player)
+                    return 'close'
+        if self.skip_button.draw(screen):
+            return 'close'
+        return 'upgrade'    

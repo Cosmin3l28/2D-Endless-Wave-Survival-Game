@@ -27,6 +27,8 @@ class Player(pygame.sprite.Sprite):
         self.speed = 2
         self.stamina = 100
         self.health = 100
+        self.gold = 0
+        self.damage = 50 
 
         # damage flash system
         self.damaged = False  # nou: indicator că jucătorul a fost lovit recent
@@ -138,8 +140,9 @@ class Player(pygame.sprite.Sprite):
 
             for enemy in self.level.enemies:
                 if self.rect.colliderect(enemy.rect):
-                     enemy.take_damage(100)  # folosim metoda corectă
-                    
+                    enemy.take_damage(100)  # folosim metoda corectă
+                    if enemy.health <= 0:
+                        enemy.kill()
 
     def move(self, speed):
         if self.direction.x != 0 and self.direction.y != 0:
@@ -176,7 +179,7 @@ class Player(pygame.sprite.Sprite):
         self.last_shot = current_time
         bullet = Bullet(self.weapon.rect.center, self.weapon.direction,
                         [self.level.visible_sprites, self.level.bullets],
-                        self.obstacle_sprites, self.level.enemies)
+                        self.obstacle_sprites, self.level.enemies, self, self.damage)
         self.level.bullets.add(bullet)
 
     def cooldown_dash(self):
@@ -228,6 +231,11 @@ class Player(pygame.sprite.Sprite):
             self.last_damaged_time = current_time
             self.can_flash = False
             self.last_flash_time = current_time
+
+    def draw_gold(self, surface):
+        font = pygame.font.Font(None, 32)
+        text = font.render(f"Gold: {self.gold}", True, 'yellow')
+        surface.blit(text, (10, 130))
 
     def update(self):
         self.input()

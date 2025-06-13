@@ -29,16 +29,26 @@ moster_data = {
     'enemy': {
         'health': 100,
         'damage': 10,
-        'speed': 2,
+        'speed': 1,
         'attack_radius': 100,
         'loot': 1,
         'resistance': 10,
         'graphic': 'graphics/enemies/enemy.png'
     },
+    
+    'shooter': {
+        'health': 80,
+        'damage': 8,
+        'speed': 0.8,
+        'shoot_interval': 1200,
+        'loot': 2,
+        'graphic': 'graphics/enemies/enemy.png'
+    },
+
     'boss': {
         'health': 500,
         'damage': 20,
-        'speed': 1,
+        'speed': 0.5,
         'attack_radius': 200,
         'loot': 3,
         'resistance': 20,
