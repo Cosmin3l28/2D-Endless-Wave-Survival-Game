@@ -1,7 +1,15 @@
+"""Projectile classes for both player and enemy bullets."""
 import pygame
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, pos, direction, groups, obstacle_sprites, enemies, player, damage=50):
+    """Projectile fired by the player."""
+    def __init__(self, 
+                 pos: tuple, direction: tuple, 
+                 groups: list, obstacle_sprites: list, 
+                 enemies: list, player: pygame.sprite.Sprite, 
+                 damage: int = 50
+    ):
+        """Initialize a new bullet instance."""
         super().__init__(groups)
         self.image = pygame.Surface((10, 4))
         self.image.fill('yellow')
@@ -16,7 +24,9 @@ class Bullet(pygame.sprite.Sprite):
         self.player = player
         self.damage = damage
 
-    def update(self):
+    def update(self) -> None:
+        """Move the bullet and handle collisions."""
+
         self.rect.x += self.direction.x * self.speed
         self.rect.y += self.direction.y * self.speed
 
@@ -26,7 +36,8 @@ class Bullet(pygame.sprite.Sprite):
                 return
         for enemy in list(self.enemies):
             if self.rect.colliderect(enemy.rect):
-                enemy.take_damage(self.damage)  # ← apelăm corect funcția care pornește animatia
+                # apelăm corect funcția care pornește animatia
+                enemy.take_damage(self.damage)
                 if enemy.health <= 0:
                     enemy.kill()
                     self.player.gold += enemy.loot
@@ -34,8 +45,20 @@ class Bullet(pygame.sprite.Sprite):
                 return
 
 class EnemyBullet(pygame.sprite.Sprite):
-    def __init__(self, pos, direction, groups, obstacle_sprites, player, damage=10):
+    """Bullet fired by enemies."""
+
+    def __init__(
+        self,
+        pos: tuple,
+        direction: tuple,
+        groups: list,
+        obstacle_sprites: list,
+        player: pygame.sprite.Sprite,
+        damage: int = 10,
+    ):
+        """Initialize the enemy bullet."""
         super().__init__(groups)
+        
         self.image = pygame.Surface((12, 6))
         self.image.fill('red')
         self.rect = self.image.get_rect(center=pos)
@@ -48,7 +71,9 @@ class EnemyBullet(pygame.sprite.Sprite):
         self.player = player
         self.damage = damage
 
-    def update(self):
+    def update(self) -> None:
+        """Move the bullet and check collisions with the player."""
+
         self.rect.x += self.direction.x * self.speed
         self.rect.y += self.direction.y * self.speed
         for sprite in self.obstacle_sprites:

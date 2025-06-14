@@ -1,6 +1,7 @@
-from csv import reader
-from os import walk
+"""Support functions and constants for the game."""
 import pygame
+from os import walk
+from csv import reader
 
 WIDTH    = 1440	
 HEIGHT  = 810
@@ -56,8 +57,55 @@ moster_data = {
     }
 }
 
+upgrade_pool = [
+            {
+                'name': 'Health +20',
+                'cost': 5,
+                'rarity': 'common',
+                'apply': lambda p: setattr(p, 'health', p.health + 20),
+            },
+            {
+                'name': 'Damage +10',
+                'cost': 6,
+                'rarity': 'common',
+                'apply': lambda p: setattr(p, 'damage', p.damage + 10),
+            },
+            {
+                'name': 'Speed +0.5',
+                'cost': 6,
+                'rarity': 'common',
+                'apply': lambda p: setattr(p, 'speed', p.speed + 0.5),
+            },
+            {
+                'name': 'Health +50',
+                'cost': 15,
+                'rarity': 'rare',
+                'apply': lambda p: setattr(p, 'health', p.health + 50),
+            },
+            {
+                'name': 'Damage +25',
+                'cost': 18,
+                'rarity': 'rare',
+                'apply': lambda p: setattr(p, 'damage', p.damage + 25),
+            },
+            {
+                'name': 'Speed +1',
+                'cost': 20,
+                'rarity': 'rare',
+                'apply': lambda p: setattr(p, 'speed', p.speed + 1),
+            },
+]
 
-def import_csv_layout(path):
+
+def import_csv_layout(path) -> list[list[str]]:
+    """Import a CSV layout file.
+
+    Args:
+        path (str): The file path to the CSV layout.
+
+    Returns:
+        list[list[str]]: A 2D list representing the tile layout.
+    """
     terrain_map = []
     with open(path) as level_map:
         layout = reader(level_map, delimiter=',')
@@ -66,8 +114,15 @@ def import_csv_layout(path):
             terrain_map.append(list(row))
         return terrain_map
     
-def import_folder(path):
+def import_folder(path) -> list[pygame.Surface]:
+    """Import all images from a folder.
 
+    Args:
+        path (str): The file path to the folder.
+
+    Returns:
+        list[pygame.Surface]: A list of surfaces representing the images.
+    """
     surface_list = [] # list of surfaces
     for data in walk(path):
         image_files = data[2] # we get the image files from the data

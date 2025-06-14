@@ -1,55 +1,50 @@
+"""Entry point for running the Endless Survival game."""
 import pygame, sys
 import random
+from support import upgrade_pool
 from level import Level
 from support import WIDTH, HEIGHT, FPS
 from ui import MainMenu, PauseMenu, UpgradeMenu
-import random
 
 
 class Game:
-    def __init__(self):
+    _instance = None
 
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls) -> 'Game':
+        return cls()
+
+    def __init__(self):
+        """Initialize the game, setting up the display, menus, and initial state."""
+        if self._initialized:
+            return
+        self._initialized = True
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption('Endless Survival')
         self.clock = pygame.time.Clock()
-
         self.main_menu = MainMenu()
         self.pause_menu = PauseMenu()
-
-        self.upgrade_pool = [
-            {'name': 'Health +20', 'cost': 5, 'rarity': 'common', 'apply': lambda p: setattr(p, 'health', p.health + 20)},
-            {'name': 'Damage +10', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'damage', p.damage + 10)},
-            {'name': 'Speed +0.5', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'speed', p.speed + 0.5)},
-            {'name': 'Health +50', 'cost': 15, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'health', p.health + 50)},
-            {'name': 'Damage +25', 'cost': 18, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'damage', p.damage + 25)},
-            {'name': 'Speed +1', 'cost': 20, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'speed', p.speed + 1)},
-        ]
-
+        self.upgrade_pool = upgrade_pool
         self.rarity_weights = {'common': 10, 'rare': 2}
         self.upgrade_menu = None
         self.current_wave = 1
-
         self.font = pygame.font.SysFont(None, 60)
         self.small_font = pygame.font.SysFont(None, 40)
-
-        self.upgrade_pool = [
-            {'name': 'Health +20', 'cost': 5, 'rarity': 'common', 'apply': lambda p: setattr(p, 'health', p.health + 20)},
-            {'name': 'Damage +10', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'damage', p.damage + 10)},
-            {'name': 'Speed +0.5', 'cost': 6, 'rarity': 'common', 'apply': lambda p: setattr(p, 'speed', p.speed + 0.5)},
-            {'name': 'Health +50', 'cost': 15, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'health', p.health + 50)},
-            {'name': 'Damage +25', 'cost': 18, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'damage', p.damage + 25)},
-            {'name': 'Speed +1', 'cost': 20, 'rarity': 'rare', 'apply': lambda p: setattr(p, 'speed', p.speed + 1)},
-        ]
-
         self.rarity_weights = {'common': 10, 'rare': 2}
         self.upgrade_menu = None
         self.current_wave = 1
-
         self.game_state = 'menu'
         self.level = None
 
-    def generate_upgrade_menu(self):
+    def generate_upgrade_menu(self) -> None:
+        """Generate a random selection of upgrades from the upgrade pool."""
         pool = self.upgrade_pool[:]
         selected = []
         for _ in range(min(3, len(pool))):
@@ -59,11 +54,13 @@ class Game:
             pool.remove(choice)
         self.upgrade_menu = UpgradeMenu(selected)
 
-    def reset_game(self):
+    def reset_game(self) -> None:
+        """Reset the game to the initial state."""
         self.level = Level()
         self.game_state = 'playing'
 
-    def handle_events(self):
+    def handle_events(self) -> None:
+        """Handle user input events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -85,8 +82,8 @@ class Game:
                         pygame.quit()
                         sys.exit()
 
-    def update(self):
-            # Desenăm flash roșu dacă a fost lovit
+    def update(self) -> None:
+        """Update the game state and handle transitions between menus."""
         if self.game_state == 'menu':
             menu_result = self.main_menu.draw(self.screen)
             if menu_result == "play":
@@ -113,7 +110,6 @@ class Game:
                 self.level = None
                 self.game_state = "menu"
             
-        #upgrade menu
         elif self.game_state == 'upgrade':
             upgrade_result = self.upgrade_menu.draw(self.screen, self.level.player)
             if upgrade_result == 'close':
@@ -126,7 +122,7 @@ class Game:
             current_time = pygame.time.get_ticks()
             if current_time - self.level.player.last_damaged_time < self.level.player.damage_flash_duration:
                 red_overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-                red_overlay.fill((255, 0, 0, 80))  # RGBA, 80 = transparență
+                red_overlay.fill((255, 0, 0, 80))  # RGBA, 80 = transparency
                 self.screen.blit(red_overlay, (0, 0))
             else:
                 self.level.player.damaged = False
@@ -148,7 +144,8 @@ class Game:
             self.screen.blit(new_game_text, self.new_game_rect)
             self.screen.blit(exit_text, self.exit_rect)
 
-    def run(self):
+    def run(self) -> None:
+        """Start the game loop."""
         self.reset_game()
         while True:     
             self.handle_events()                
@@ -157,5 +154,5 @@ class Game:
             self.clock.tick(FPS)
 
 if __name__ == "__main__":
-    game = Game()
+    game = Game().get_instance()
     game.run()
