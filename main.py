@@ -49,7 +49,6 @@ class Game:
         self.game_state = 'menu'
         self.level = None
 
-<<<<<<< HEAD
     def generate_upgrade_menu(self):
         pool = self.upgrade_pool[:]
         selected = []
@@ -64,8 +63,6 @@ class Game:
         self.level = Level()
         self.game_state = 'playing'
 
-=======
->>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,6 +87,40 @@ class Game:
 
     def update(self):
             # Desenăm flash roșu dacă a fost lovit
+        if self.game_state == 'menu':
+            menu_result = self.main_menu.draw(self.screen)
+            if menu_result == "play":
+                self.level = Level()
+                # Initialize the first wave
+                self.level.start_wave(self.current_wave)
+                self.game_state = "playing"
+            elif menu_result == "quit":
+                pygame.quit()
+                sys.exit()
+        
+        elif self.game_state == "playing":
+            self.screen.fill('#47ABA9')
+            # Update and draw the level
+            wave_done = self.level.run()
+            if wave_done:
+                self.generate_upgrade_menu()
+                self.game_state = 'upgrade'
+
+        elif self.game_state == "paused":
+            self.level.visible_sprites.custom_draw(self.level.player)  # Redesenează ultimul frame
+            pause_result = self.pause_menu.draw(self.screen)
+            if pause_result == 'menu':
+                self.level = None
+                self.game_state = "menu"
+            
+        #upgrade menu
+        elif self.game_state == 'upgrade':
+            upgrade_result = self.upgrade_menu.draw(self.screen, self.level.player)
+            if upgrade_result == 'close':
+                self.current_wave += 1
+                self.level.start_wave(self.current_wave)
+                self.game_state = 'playing'
+
         if self.level.player.damaged:
             print("Player damaged, flashing red")
             current_time = pygame.time.get_ticks()
@@ -119,54 +150,9 @@ class Game:
 
     def run(self):
         self.reset_game()
-        while True:
-            
-            self.handle_events()
-            if self.game_state == 'menu':
-                menu_result = self.main_menu.draw(self.screen)
-                if menu_result == "play":
-                    self.level = Level()
-<<<<<<< HEAD
-                    # Initialize the first wave
-                    self.level.start_wave(self.current_wave)
-=======
->>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
-                    self.game_state = "playing"
-                elif menu_result == "quit":
-                    pygame.quit()
-                    sys.exit()
-            
-            elif self.game_state == "playing":
-                self.screen.fill('#47ABA9')
-<<<<<<< HEAD
-                # Update and draw the level
-                self.update()
-                wave_done = self.level.run()
-                if wave_done:
-                    self.generate_upgrade_menu()
-                    self.game_state = 'upgrade'
-=======
-                self.level.run()
->>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
-
-            elif self.game_state == "paused":
-                self.level.visible_sprites.custom_draw(self.level.player)  # Redesenează ultimul frame
-                pause_result = self.pause_menu.draw(self.screen)
-                if pause_result == 'menu':
-                    self.level = None
-                    self.game_state = "menu"
-<<<<<<< HEAD
-                
-            #upgrade menu
-            elif self.game_state == 'upgrade':
-                upgrade_result = self.upgrade_menu.draw(self.screen, self.level.player)
-                if upgrade_result == 'close':
-                    self.current_wave += 1
-                    self.level.start_wave(self.current_wave)
-                    self.game_state = 'playing'
-=======
->>>>>>> 0638c1ed939c8bef292b33ca80482facd04b1030
-                    
+        while True:     
+            self.handle_events()                
+            self.update()
             pygame.display.update()
             self.clock.tick(FPS)
 
