@@ -67,8 +67,8 @@ class Level:
         self.player.level = self # we set the level of the player to the current level so that we can access the level from the player
         
     def spawn_random_enemy(self, enemy_type='enemy'):
-        x = random.randint(200, 2200)
-        y = random.randint(200, 2200)
+        x = random.randint(300, 2100)
+        y = random.randint(300, 2100)
         enemy = Enemy(enemy_type, (x, y),
                       [self.visible_sprites, self.enemies],
                       self.obstacle_sprites, self.player, self.enemy_bullets)
