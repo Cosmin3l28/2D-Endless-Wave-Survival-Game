@@ -1,3 +1,4 @@
+"""Enemy classes and behavior logic."""
 import pygame
 from support import import_folder
 import os
@@ -5,7 +6,18 @@ from support import moster_data
 from bullet import EnemyBullet
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, monster_name, pos, groups, obstacle_sprites=None, player=None, bullet_group=None):
+    """Generic enemy character that can move and attack the player."""
+
+    def __init__(
+            self,
+            monster_name,
+            pos,
+            groups,
+            obstacle_sprites=None,
+            player=None,
+            bullet_group=None):
+        """Initialize the enemy and load its animations."""
+
         super().__init__(groups)
         self.sprite_type = 'enemy'
         self.frame_index = 0
@@ -30,6 +42,7 @@ class Enemy(pygame.sprite.Sprite):
         }
 
         base_path = os.path.join('graphics', 'enemy_1')
+        """Load animations for the enemy from the specified folder structure."""
         for anim_type in self.animations.keys():
             for direction in ['down', 'up', 'left', 'right']:
                 path = os.path.join(base_path, anim_type, direction)
@@ -53,7 +66,7 @@ class Enemy(pygame.sprite.Sprite):
         self.health = data.get('health', 100)
         self.speed = data.get('speed', 2)
         self.damage = data.get('damage', 10)
-        self.bullet_group = bullet_group    
+        self.bullet_group = bullet_group 
         self.float_x = float(self.hitbox.x)
         self.float_y = float(self.hitbox.y)
         self.shoot_interval = data.get('shoot_interval')
@@ -62,9 +75,10 @@ class Enemy(pygame.sprite.Sprite):
         self.shooting = False
         self.pause_start = 0
 
-    def get_status(self):
+    def get_status(self) -> None:
+        """Determine the current animation state of the enemy."""
         if not self.alive:
-            return  # nu schimbăm statusul dacă e mort
+            return  # Do not update status if dead
 
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
@@ -87,9 +101,12 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.status = 'walk'
 
-    def animate(self):
+    def animate(self) -> None:
+        """Advance animation frames based on the current status."""
         direction = 'down' if self.status == 'death' else self.facing
-        animation_list = self.animations.get(self.status, {}).get(direction, [])
+        animation_list = self.animations.get(
+            self.status, {}).get(
+                direction, [])
 
         if not animation_list:
             print(f"[WARN] Missing animation: {self.status}/{direction}")
@@ -110,7 +127,8 @@ class Enemy(pygame.sprite.Sprite):
         frame = animation_list[int(self.frame_index)]
         self.image = pygame.transform.scale(frame, (192, 192))
 
-    def update(self):
+    def update(self) -> None:
+        """Update enemy behavior and animations."""
         if self.health <= 0:
             if self.alive:
                 self.alive = False
@@ -124,7 +142,8 @@ class Enemy(pygame.sprite.Sprite):
                 if self.dead_animation_finished:
                     self.kill()
             return
-
+        
+        """Handle enemy behavior based on current status."""
         if self.shooting:
             if pygame.time.get_ticks() - self.pause_start >= self.shoot_pause:
                 self.shooting = False
@@ -133,21 +152,23 @@ class Enemy(pygame.sprite.Sprite):
                 self.move_towards_player()
             elif self.status == 'attack':
                 self.apply_attack_damage()
-        
+
         if self.shoot_interval:
             self.shoot()
 
         self.get_status()
         self.animate()
 
-    def move_towards_player(self):
+    def move_towards_player(self) -> None:
+        """Move the enemy towards the player's current position."""
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
         dist = max(1, (dx**2 + dy**2) ** 0.5)
         self.direction = pygame.math.Vector2(dx / dist, dy / dist)
         self.move(self.speed)
 
-    def apply_attack_damage(self):
+    def apply_attack_damage(self) -> None:
+        """Inflict damage to the player when attacking."""
         attack_zone = pygame.Rect(0, 0, 96, 96)
         attack_zone.center = self.rect.center
 
@@ -156,7 +177,12 @@ class Enemy(pygame.sprite.Sprite):
                 self.player.take_damage(10)
                 self.has_damaged_player = True
 
-    def move(self, speed):
+    def move(self, speed: float) -> None:
+        """Move the enemy in the current direction while checking for collisions.
+
+        Args:
+            speed (float): The speed at which to move the enemy.
+        """
         self.float_x += self.direction.x * speed
         self.hitbox.x = int(self.float_x)
         self.collision('horizontal')
@@ -165,7 +191,12 @@ class Enemy(pygame.sprite.Sprite):
         self.collision('vertical')
         self.rect.center = self.hitbox.center
 
-    def collision(self, direction):
+    def collision(self, direction: str) -> None:
+        """Handle collisions with map obstacles.
+
+        Args:
+            direction (str): The direction of the collision.
+        """
         if not self.obstacle_sprites:
             return
         for sprite in self.obstacle_sprites:
@@ -187,17 +218,26 @@ class Enemy(pygame.sprite.Sprite):
                         self.hitbox.top = sprite.hitbox.bottom
                         self.float_y = self.hitbox.y
 
-    def take_damage(self, amount):
+    def take_damage(self, amount : int) -> None:
+        """Reduce health by the provided amount.
+
+        Args:
+            amount (int): The amount of damage to inflict.
+        """
         if not self.alive:
             return
         self.health -= amount
 
-    def shoot(self):
+    def shoot(self) -> None:
+        """Fire a bullet towards the player."""
         current_time = pygame.time.get_ticks()
         if self.shooting:
             return
         if current_time - self.last_shot >= self.shoot_interval:
-            direction = pygame.math.Vector2(self.player.rect.center) - pygame.math.Vector2(self.rect.center)
+            direction = (
+                pygame.math.Vector2(self.player.rect.center)
+                - pygame.math.Vector2(self.rect.center)
+            )
             bullet = EnemyBullet(
                 self.rect.center,
                 direction,

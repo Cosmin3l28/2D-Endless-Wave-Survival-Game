@@ -1,29 +1,30 @@
+"""Weapon sprite used by the player."""
 import pygame
-import math
 
 class Weapon(pygame.sprite.Sprite):
-    def __init__(self, player, groups):
+    """Weapon sprite used by the player."""
+    def __init__(self, 
+                 player: pygame.sprite.Sprite, 
+                 groups: list[pygame.sprite.Group],
+                 ):
+        """Create a weapon sprite bound to a player."""
         super().__init__(groups)
-        self.original_image = pygame.image.load('graphics/weapons/GUN_test.png').convert_alpha()
+        self.original_image = pygame.image.load(
+            'graphics/weapons/GUN_test.png').convert_alpha()
         self.image = self.original_image
-        self.rect = self.image.get_rect(center=player.rect.center)  # <-- Add this line
+        self.rect = self.image.get_rect(
+            center=player.rect.center)
         self.player = player
         self.direction = pygame.math.Vector2(1, 0)
         self.handle_offset = pygame.math.Vector2(4, 2)
         
-    def update_weapon(self):
-        # direction = self.player.status.split('_')[0]
-        # if direction == 'up':
-        #     self.rect =  self.image.get_rect(midbottom=self.player.rect.midtop + pygame.math.Vector2(-10, 40))
-        # elif direction == 'down':
-        #     self.rect =  self.image.get_rect(midtop=self.player.rect.midbottom + pygame.math.Vector2(-10,-40))
-        # elif direction == 'left':
-        #     self.rect =  self.image.get_rect(midright=self.player.rect.midleft + pygame.math.Vector2(25, 12))
-        # elif direction == 'right':
-        #     self.rect =  self.image.get_rect(midleft=self.player.rect.midright + pygame.math.Vector2(-25, 12))
+    def update_weapon(self) -> None:
+
+        """Update the weapon's position and rotation based on the player's direction."""
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos()) + self.player.level.visible_sprites.offset
         player_center = pygame.Vector2(self.player.rect.center)
         direction = mouse_pos - player_center
+        # Normalize the direction vector to avoid division by zero
         if direction.length() == 0:
             direction = pygame.Vector2(1, 0)
         self.direction = direction.normalize()

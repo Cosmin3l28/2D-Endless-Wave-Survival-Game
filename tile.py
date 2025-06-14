@@ -1,14 +1,17 @@
+"""Tile class for managing tile properties in a game."""
 import pygame
 from support import TILESIZE
-#we want to implement hitbox for tiles so that we can add 3d depth effect
-#the player can stand behind or cover objects depending of weather he is in front or behind the hitbox of the object
+
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, sprite_type='tile', surface = pygame.Surface((TILESIZE, TILESIZE))):
+    def __init__(self, 
+                 pos : tuple[int, int], 
+                 groups : list[pygame.sprite.Group], 
+                 sprite_type : str = 'tile', 
+                 surface : pygame.Surface = pygame.Surface((TILESIZE, TILESIZE))):
+        """Initialize a tile with position, groups, type, and surface."""
         super().__init__(groups)#we initiate the tile class as a sprite
         self.sprite_type = sprite_type
         self.image = surface
-        #self.image = pygame.transform.scale(self.image, (64, 64))
-        #self.image = pygame.image.load('graphics/tiles/tile.png').convert_alpha()#we load the image of the tile
         if self.sprite_type == 'object':
             surface_size = self.image.get_size()
             #tower
@@ -34,8 +37,6 @@ class Tile(pygame.sprite.Sprite):
             elif surface_size == (164, 95):
                 self.rect = self.image.get_rect(topleft= (pos[0] + 100, pos[1] - 31))
                 self.hitbox = self.rect.inflate(-40, -60)
-                # self.hitbox.y = self.hitbox.y - 50
-                # self.hitbox.height = self.hitbox.height - 50
 
         else:
             self.rect = self.image.get_rect(topleft=pos)
